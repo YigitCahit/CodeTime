@@ -514,11 +514,10 @@ function buildPayload() {
                 { type: 1, name: 'time3', value: time(2) },
                 { type: 1, name: 'lang4', value: lang4 },
                 { type: 1, name: 'time4', value: time4 },
-                imgField('image1', img(0)),
-                imgField('image2', img(1)),
-                imgField('image3', img(2)),
-                // 4. alan "Diğer/Others" olduğu için her zaman yedek (fallback) ikon kullanılır
-                imgField('image4', iconUrl(undefined))
+                imgField('img1', img(0)),
+                imgField('img2', img(1)),
+                imgField('img3', img(2)),
+                imgField('img4', iconUrl(undefined))
             ]
         }
     };

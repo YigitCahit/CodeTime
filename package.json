@@ -1,7 +1,7 @@
 {
   "name": "codetime-discord-tracker",
   "displayName": "CodeTime Discord Tracker",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "description": "Kodlama sürenizi dile göre takip eder ve Discord Widget'a gönderir.",
   "publisher": "YigitCahit",
   "categories": ["Other"],
