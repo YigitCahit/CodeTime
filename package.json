@@ -1,7 +1,7 @@
 {
   "name": "codetime-discord-tracker",
   "displayName": "CodeTime Discord Tracker",
-  "version": "1.4.2",
+  "version": "1.4.6",
   "description": "Kodlama sürenizi dile göre takip eder ve Discord Widget'a gönderir.",
   "publisher": "YigitCahit",
   "categories": ["Other"],
@@ -41,7 +41,7 @@
         "codetime.discord.iconOverrides": {
           "type": "object",
           "default": {},
-          "description": "Dil -> ikon URL eşlemesi. Örn: { \"python\": \"https://.../python.svg\" }"
+          "description": "Dil -> ikon URL eşlemesi. Örn: { \"python\": \"https://.../python.png\" }"
         },
         "codetime.trackingMode": {
           "type": "string",

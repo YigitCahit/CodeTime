@@ -39,8 +39,8 @@ const SECRET_KEY = 'codetime.discordBotToken';
 const DEFAULT_STATS_PATH = path.join(os.homedir(), 'CodeTime-langtimes.json');
 const IGNORED_SCHEMES = ['output', 'debug', 'git', 'gitfs', 'comment', 'vscode-terminal'];
 
-const DEVICON_BASE = 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons';
-const DEFAULT_FALLBACK_ICON = `${DEVICON_BASE}/devicon/devicon-original.svg`;
+const DEVICON_BASE = 'https://raw.githubusercontent.com/YigitCahit/CodeTime-Icons/refs/heads/main';
+const DEFAULT_FALLBACK_ICON = `${DEVICON_BASE}/default.png`;
 
 // VS Code languageId / görünen ad (küçük harf, boşluksuz) -> devicon yolu
 const DEVICON_MAP: { [key: string]: string } = {
@@ -233,7 +233,7 @@ function iconUrl(lang: string | undefined): string {
     if (overrides[key]) { return overrides[key]; }
 
     const entry = DEVICON_MAP[key];
-    return entry ? `${DEVICON_BASE}/${entry}.svg` : fallback;
+    return entry ? `${DEVICON_BASE}/${entry}.png` : fallback;
 }
 
 function notify(kind: 'info' | 'warn' | 'error', msg: string, ...actions: string[]): Thenable<string | undefined> {
