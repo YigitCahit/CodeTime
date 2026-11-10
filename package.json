@@ -1,0 +1,196 @@
+{
+  "name": "codetime-discord-tracker",
+  "displayName": "CodeTime Discord Tracker",
+  "version": "1.2.0",
+  "description": "Kodlama sürenizi dile göre takip eder ve Discord Widget'a gönderir.",
+  "publisher": "YigitCahit",
+  "categories": ["Other"],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "codetime.openMenu", "category": "CodeTime", "title": "Menüyü Aç" },
+      { "command": "codetime.saveAndSync", "category": "CodeTime", "title": "Kaydet ve Discord'a Gönder" },
+      { "command": "codetime.saveOnly", "category": "CodeTime", "title": "Sadece Kaydet" },
+      { "command": "codetime.syncDiscord", "category": "CodeTime", "title": "Discord'a Gönder" },
+      { "command": "codetime.showStats", "category": "CodeTime", "title": "İstatistikleri Göster" },
+      { "command": "codetime.togglePause", "category": "CodeTime", "title": "Takibi Duraklat / Devam Ettir" },
+      { "command": "codetime.toggleAutoSync", "category": "CodeTime", "title": "Discord Otomatik Senkronu Aç / Kapat" },
+      { "command": "codetime.ignoreCurrentLanguage", "category": "CodeTime", "title": "Mevcut Dili Takipten Çıkar" },
+      { "command": "codetime.exportStats", "category": "CodeTime", "title": "İstatistikleri Dışa Aktar (JSON / CSV)" },
+      { "command": "codetime.resetLanguage", "category": "CodeTime", "title": "Bir Dilin Verisini Sıfırla" },
+      { "command": "codetime.resetStats", "category": "CodeTime", "title": "Tüm İstatistikleri Sıfırla" },
+      { "command": "codetime.openStatsFile", "category": "CodeTime", "title": "İstatistik Dosyasını Aç" },
+      { "command": "codetime.setBotToken", "category": "CodeTime", "title": "Discord Bot Token Ayarla" },
+      { "command": "codetime.clearBotToken", "category": "CodeTime", "title": "Discord Bot Token Sil" },
+      { "command": "codetime.openSettings", "category": "CodeTime", "title": "Ayarları Aç" }
+    ],
+    "configuration": {
+      "title": "CodeTime",
+      "properties": {
+        "codetime.trackingMode": {
+          "type": "string",
+          "enum": ["active", "passive"],
+          "enumDescriptions": [
+            "Sadece klavye/fare etkileşimi ve aktif kullanım süresini sayar (Idle ve Unfocused durumlarında durur).",
+            "VS Code açık olduğu ve dosya düzenlendiği sürece (idle/unfocused takılmadan) arka planda da sayar."
+          ],
+          "default": "active",
+          "order": 10,
+          "description": "Zaman takip modu: Aktif (yalnızca aktif çalışma) veya Pasif (editör açık olduğu sürece)."
+        },
+        "codetime.discord.applicationId": {
+          "type": "string",
+          "default": "",
+          "order": 1,
+          "description": "Discord uygulama (Application) ID'si."
+        },
+        "codetime.discord.userId": {
+          "type": "string",
+          "default": "",
+          "order": 2,
+          "description": "Widget verisinin yazılacağı Discord kullanıcı ID'si."
+        },
+        "codetime.discord.autoSync": {
+          "type": "boolean",
+          "default": true,
+          "order": 3,
+          "description": "Veriler değiştiğinde Discord'a otomatik gönder."
+        },
+        "codetime.discord.syncIntervalSeconds": {
+          "type": "number",
+          "default": 120,
+          "minimum": 60,
+          "order": 4,
+          "description": "Otomatik Discord senkron aralığı (saniye)."
+        },
+        "codetime.discord.timeFormat": {
+          "type": "string",
+          "enum": ["hours", "hoursMinutes", "decimalHours"],
+          "enumDescriptions": ["Yuvarlanmış saat (örn. 3 Hours)", "Saat ve dakika (örn. 3h 20m)", "Ondalıklı saat (örn. 3.3 Hours)"],
+          "default": "hours",
+          "order": 5,
+          "description": "Discord widget'ında gösterilecek süre biçimi."
+        },
+        "codetime.discord.range": {
+          "type": "string",
+          "enum": ["allTime", "last30Days", "last7Days", "today"],
+          "enumDescriptions": ["Tüm zamanlar", "Son 30 gün", "Son 7 gün", "Sadece bugün"],
+          "default": "allTime",
+          "order": 6,
+          "description": "Discord'a gönderilecek istatistik aralığı."
+        },
+        "codetime.autoSaveIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 10,
+          "order": 10,
+          "description": "Verilerin dosyaya otomatik kaydedilme aralığı (saniye)."
+        },
+        "codetime.idleTimeoutSeconds": {
+          "type": "number",
+          "default": 300,
+          "minimum": 0,
+          "order": 11,
+          "description": "Bu süre boyunca hareket olmazsa sayım durur (saniye). 0 = devre dışı."
+        },
+        "codetime.pauseWhenWindowUnfocused": {
+          "type": "boolean",
+          "default": true,
+          "order": 12,
+          "description": "VS Code penceresi odakta değilken sayımı durdur."
+        },
+        "codetime.ignoredLanguages": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["plaintext", "log"],
+          "order": 13,
+          "description": "Takip edilmeyecek dil ID'leri."
+        },
+        "codetime.languageAliases": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "default": {},
+          "order": 14,
+          "markdownDescription": "Dil ID'lerine görünen ad atar. Örnek: `{ \"typescriptreact\": \"TSX\", \"javascriptreact\": \"JSX\" }`. Aynı adı alan diller birleştirilir."
+        },
+        "codetime.statsFilePath": {
+          "type": "string",
+          "default": "",
+          "order": 15,
+          "description": "İstatistik dosyasının yolu. Boşsa ~/CodeTime-langtimes.json kullanılır."
+        },
+        "codetime.dailyHistoryDays": {
+          "type": "number",
+          "default": 90,
+          "minimum": 7,
+          "order": 16,
+          "description": "Günlük kayıtların saklanacağı gün sayısı."
+        },
+        "codetime.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "order": 20,
+          "description": "Durum çubuğu öğesini göster."
+        },
+        "codetime.statusBar.alignment": {
+          "type": "string",
+          "enum": ["left", "right"],
+          "default": "right",
+          "order": 21,
+          "description": "Durum çubuğu öğesinin konumu."
+        },
+        "codetime.statusBar.priority": {
+          "type": "number",
+          "default": 100,
+          "order": 22,
+          "description": "Durum çubuğu önceliği (yüksek değer, kenara daha yakın)."
+        },
+        "codetime.statusBar.showToday": {
+          "type": "boolean",
+          "default": true,
+          "order": 23,
+          "description": "Durum çubuğunda bugünkü toplam süreyi göster."
+        },
+        "codetime.display.timeFormat": {
+          "type": "string",
+          "enum": ["hours", "hoursMinutes", "decimalHours"],
+          "default": "hoursMinutes",
+          "order": 24,
+          "description": "Arayüzde (durum çubuğu, menüler) gösterilecek süre biçimi."
+        },
+        "codetime.display.tooltipMaxLanguages": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "maximum": 10,
+          "order": 25,
+          "description": "Tooltip'te listelenecek en fazla dil sayısı."
+        },
+        "codetime.notifications": {
+          "type": "string",
+          "enum": ["all", "errors", "none"],
+          "enumDescriptions": ["Tüm bildirimler", "Sadece uyarı ve hatalar", "Bildirim gösterme"],
+          "default": "all",
+          "order": 30,
+          "description": "Bildirim düzeyi."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "typescript": "^4.9.0"
+  }
+}
