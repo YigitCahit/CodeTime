@@ -39,6 +39,58 @@ const SECRET_KEY = 'codetime.discordBotToken';
 const DEFAULT_STATS_PATH = path.join(os.homedir(), 'CodeTime-langtimes.json');
 const IGNORED_SCHEMES = ['output', 'debug', 'git', 'gitfs', 'comment', 'vscode-terminal'];
 
+const DEVICON_BASE = 'https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons';
+const DEFAULT_FALLBACK_ICON = `${DEVICON_BASE}/devicon/devicon-original.svg`;
+
+// VS Code languageId / görünen ad (küçük harf, boşluksuz) -> devicon yolu
+const DEVICON_MAP: { [key: string]: string } = {
+    python: 'python/python-original',
+    javascript: 'javascript/javascript-original',
+    javascriptreact: 'react/react-original',
+    typescript: 'typescript/typescript-original',
+    typescriptreact: 'react/react-original',
+    java: 'java/java-original',
+    csharp: 'csharp/csharp-original',
+    'c#': 'csharp/csharp-original',
+    cpp: 'cplusplus/cplusplus-original',
+    'c++': 'cplusplus/cplusplus-original',
+    c: 'c/c-original',
+    go: 'go/go-original',
+    rust: 'rust/rust-original',
+    php: 'php/php-original',
+    ruby: 'ruby/ruby-original',
+    html: 'html5/html5-original',
+    css: 'css3/css3-original',
+    scss: 'sass/sass-original',
+    sass: 'sass/sass-original',
+    less: 'less/less-plain-wordmark',
+    json: 'json/json-original',
+    jsonc: 'json/json-original',
+    markdown: 'markdown/markdown-original',
+    shellscript: 'bash/bash-original',
+    bash: 'bash/bash-original',
+    powershell: 'powershell/powershell-original',
+    kotlin: 'kotlin/kotlin-original',
+    swift: 'swift/swift-original',
+    dart: 'dart/dart-original',
+    lua: 'lua/lua-original',
+    r: 'r/r-original',
+    perl: 'perl/perl-original',
+    scala: 'scala/scala-original',
+    haskell: 'haskell/haskell-original',
+    elixir: 'elixir/elixir-original',
+    yaml: 'yaml/yaml-original',
+    dockerfile: 'docker/docker-original',
+    vue: 'vuejs/vuejs-original',
+    svelte: 'svelte/svelte-original',
+    sql: 'azuresqldatabase/azuresqldatabase-original',
+    groovy: 'groovy/groovy-original',
+    objectivec: 'objectivec/objectivec-plain',
+    fsharp: 'fsharp/fsharp-original',
+    julia: 'julia/julia-original',
+    zig: 'zig/zig-original'
+};
+
 let ctx: vscode.ExtensionContext;
 let output: vscode.OutputChannel;
 let statusBarItem: vscode.StatusBarItem | undefined;
@@ -167,6 +219,21 @@ function aggregate(map: LangMap): [string, number][] {
         out[name] = (out[name] || 0) + sec;
     }
     return Object.entries(out).sort((a, b) => b[1] - a[1]);
+}
+
+function iconUrl(lang: string | undefined): string {
+    const fallback = getSetting<string>('discord.fallbackIconUrl', DEFAULT_FALLBACK_ICON).trim() || DEFAULT_FALLBACK_ICON;
+    if (!lang) { return fallback; }
+
+    const key = lang.toLowerCase().replace(/\s+/g, '');
+
+    // Kullanıcı özel ikon tanımlamışsa öncelik onda
+    const overrides = getSetting<{ [k: string]: string }>('discord.iconOverrides', {});
+    if (overrides[lang]) { return overrides[lang]; }
+    if (overrides[key]) { return overrides[key]; }
+
+    const entry = DEVICON_MAP[key];
+    return entry ? `${DEVICON_BASE}/${entry}.svg` : fallback;
 }
 
 function notify(kind: 'info' | 'warn' | 'error', msg: string, ...actions: string[]): Thenable<string | undefined> {
@@ -433,6 +500,9 @@ function buildPayload() {
     const lang4 = sorted.length > 3 ? 'Others' : 'None';
     const time4 = sorted.length > 3 ? formatDuration(otherSeconds, fmt) : formatDuration(0, fmt);
 
+    const img = (i: number) => iconUrl(sorted[i] ? sorted[i][0] : undefined);
+    const imgField = (name: string, url: string) => ({ type: 3, name, value: { url } });
+
     return {
         data: {
             dynamic: [
@@ -444,10 +514,11 @@ function buildPayload() {
                 { type: 1, name: 'time3', value: time(2) },
                 { type: 1, name: 'lang4', value: lang4 },
                 { type: 1, name: 'time4', value: time4 },
-                { type: 1, name: 'image1', value: lang(0) },
-                { type: 1, name: 'image2', value: lang(1) },
-                { type: 1, name: 'image3', value: lang(2) },
-                { type: 1, name: 'image4', value: 'Other' }
+                imgField('image1', img(0)),
+                imgField('image2', img(1)),
+                imgField('image3', img(2)),
+                // 4. alan "Diğer/Others" olduğu için her zaman yedek (fallback) ikon kullanılır
+                imgField('image4', iconUrl(undefined))
             ]
         }
     };
@@ -839,7 +910,7 @@ export function activate(context: vscode.ExtensionContext) {
     reg('codetime.openStatsFile', openStatsFile);
     reg('codetime.setBotToken', setBotToken);
     reg('codetime.clearBotToken', clearBotToken);
-    reg('codetime.openSettings', () =>vscode.commands.executeCommand('workbench.action.openSettings', '@ext:YigitCahit.codetime-discord-tracker'));
+    reg('codetime.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:YigitCahit.codetime-discord-tracker'));
 
     const active = vscode.window.activeTextEditor;
     if (active) { onEditorChange(active); }
