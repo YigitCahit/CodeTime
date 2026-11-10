@@ -517,7 +517,7 @@ function buildPayload() {
                 imgField('img1', img(0)),
                 imgField('img2', img(1)),
                 imgField('img3', img(2)),
-                imgField('img4', iconUrl(undefined))
+                imgField('img4', img(3))
             ]
         }
     };
