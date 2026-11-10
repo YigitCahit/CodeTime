@@ -4,7 +4,17 @@ import * as path from 'path';
 import * as os from 'os';
 import * as https from 'https';
 
-type TimeFormat = 'hours' | 'hoursMinutes' | 'decimalHours';
+type TimeFormat = 
+    | 'hours' 
+    | 'h' 
+    | 'hm' 
+    | 'hoursMinutes' 
+    | 'hoursAndMinutes' 
+    | 'decimalHours' 
+    | 'decimalH' 
+    | 'codingHoursMinutes' 
+    | 'codingHours' 
+    | 'codingDecimalHours';
 type LangMap = { [lang: string]: number };
 type DailyMap = { [date: string]: LangMap };
 
@@ -86,16 +96,51 @@ function sumValues(m: LangMap): number {
 }
 
 function formatDuration(seconds: number, fmt: TimeFormat): string {
+    const s = Math.max(0, seconds);
+    const hours = Math.floor(s / 3600);
+    const minutes = Math.floor((s % 3600) / 60);
+    const decimalHVal = (s / 3600).toFixed(1);
+
     switch (fmt) {
-        case 'hoursMinutes': {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
+        case 'h':
+            return `${hours}h`;
+        case 'hm': {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
             return h > 0 ? `${h}h ${m}m` : `${m}m`;
         }
+        case 'hoursMinutes': {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            return h > 0 ? `${h} Hours ${m} Minutes` : `${m} Minutes`;
+        }
+        case 'hoursAndMinutes': {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            if (h > 0 && m > 0) { return `${h} hours and ${m} minutes`; }
+            if (h > 0) { return `${h} hours`; }
+            return `${m} minutes`;
+        }
+        case 'decimalH':
+            return `${decimalHVal}h`;
         case 'decimalHours':
-            return `${(seconds / 3600).toFixed(1)} Hours`;
+            return `${decimalHVal} Hours`;
+        case 'codingHoursMinutes': {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            if (h > 0 && m > 0) { return `Coding for ${h} hours and ${m} minutes`; }
+            if (h > 0) { return `Coding for ${h} hours`; }
+            return `Coding for ${m} minutes`;
+        }
+        case 'codingHours': {
+            const h = s <= 0 ? 0 : Math.max(1, Math.round(s / 3600));
+            return `Coding for ${h} hours`;
+        }
+        case 'codingDecimalHours':
+            return `Coding for ${decimalHVal} hours`;
+        case 'hours':
         default: {
-            const h = seconds <= 0 ? 0 : Math.max(1, Math.round(seconds / 3600));
+            const h = s <= 0 ? 0 : Math.max(1, Math.round(s / 3600));
             return `${h} Hours`;
         }
     }

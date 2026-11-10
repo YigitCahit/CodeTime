@@ -1,7 +1,7 @@
 {
   "name": "codetime-discord-tracker",
   "displayName": "CodeTime Discord Tracker",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Kodlama sürenizi dile göre takip eder ve Discord Widget'a gönderir.",
   "publisher": "YigitCahit",
   "categories": ["Other"],
@@ -71,8 +71,30 @@
         },
         "codetime.discord.timeFormat": {
           "type": "string",
-          "enum": ["hours", "hoursMinutes", "decimalHours"],
-          "enumDescriptions": ["Yuvarlanmış saat (örn. 3 Hours)", "Saat ve dakika (örn. 3h 20m)", "Ondalıklı saat (örn. 3.3 Hours)"],
+          "enum": [
+            "hours",
+            "h",
+            "hm",
+            "hoursMinutes",
+            "hoursAndMinutes",
+            "decimalHours",
+            "decimalH",
+            "codingHoursMinutes",
+            "codingHours",
+            "codingDecimalHours"
+          ],
+          "enumDescriptions": [
+            "Yuvarlanmış saat (örn. 3 Hours)",
+            "Kısa saat (örn. 5h)",
+            "Saat ve dakika (örn. 8h 45m)",
+            "Saat ve dakika uzun (örn. 4 Hours 21 Minutes)",
+            "Bağlaçlı saat ve dakika (örn. 4 hours and 21 minutes)",
+            "Ondalıklı uzun saat (örn. 2.8 Hours)",
+            "Ondalıklı kısa saat (örn. 7.2h)",
+            "Coding kalıbı saat ve dakika (örn. Coding for 5 hours and 13 minutes)",
+            "Coding kalıbı saat (örn. Coding for 9 hours)",
+            "Coding kalıbı ondalıklı (örn. Coding for 7.4 hours)"
+          ],
           "default": "hours",
           "order": 5,
           "description": "Discord widget'ında gösterilecek süre biçimi."
